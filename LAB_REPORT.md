@@ -6,7 +6,7 @@
 | **Öğrenci Adı** | Utku Sina Orhan |
 | **Ders Kodu** | SE 3006 — Software Architecture |
 | **Lab No** | Lab 01 |
-| **Tarih** | 2025 |
+| **Tarih** | 2026 |
 | **Konu** | Katmanlı Mimari (Layered Architecture) — Saf Java ile Uygulama |
 
 ---
