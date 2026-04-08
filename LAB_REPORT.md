@@ -97,29 +97,6 @@ src/
 - `findById(Long id)` metodu ile ID'ye göre ürün sorgusu yapılabilmesi sağlandı.
 - `save(Product product)` metodu ile ürün nesnesi `HashMap`'e kaydedildi.
 
-**Kod Özeti:**
-
-```java
-package tr.edu.mu.se3006.persistence;
-
-import tr.edu.mu.se3006.model.Product;
-import java.util.HashMap;
-import java.util.Map;
-
-public class ProductRepository {
-
-    private final Map<Long, Product> database = new HashMap<>();
-
-    public Product findById(Long id) {
-        return database.get(id);
-    }
-
-    public void save(Product product) {
-        database.put(product.getId(), product);
-    }
-}
-```
-
 **Katman Kuralı Kontrolü:** `ProductRepository` yalnızca `Product` modelini import etmektedir. `OrderService` veya `OrderController`'a herhangi bir bağımlılık içermemektedir. ✅
 
 ---
@@ -135,39 +112,6 @@ public class ProductRepository {
   2. Stok miktarı yeterli değilse `Exception` fırlatıldı.
   3. Stok miktarı güncellendi ve ürün kaydedildi.
 
-**Kod Özeti:**
-
-```java
-package tr.edu.mu.se3006.business;
-
-import tr.edu.mu.se3006.model.Product;
-import tr.edu.mu.se3006.persistence.ProductRepository;
-
-public class OrderService {
-
-    private final ProductRepository productRepository;
-
-    public OrderService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
-    public void placeOrder(Long productId, int quantity) throws Exception {
-        Product product = productRepository.findById(productId);
-
-        if (product == null) {
-            throw new Exception("Ürün bulunamadı: ID = " + productId);
-        }
-
-        if (product.getStock() < quantity) {
-            throw new Exception("Yetersiz stok! Mevcut: "
-                + product.getStock() + ", İstenen: " + quantity);
-        }
-
-        product.setStock(product.getStock() - quantity);
-        productRepository.save(product);
-    }
-}
-```
 
 **Katman Kuralı Kontrolü:** `OrderService` yalnızca `ProductRepository` ve `Product` import etmektedir. `OrderController`'dan haberdar değildir. ✅
 
@@ -183,32 +127,6 @@ public class OrderService {
   - Başarı durumunda bilgilendirici mesaj yazdırıldı.
   - Hata durumunda exception mesajı kullanıcıya aktarıldı.
 
-**Kod Özeti:**
-
-```java
-package tr.edu.mu.se3006.presentation;
-
-import tr.edu.mu.se3006.business.OrderService;
-
-public class OrderController {
-
-    private final OrderService orderService;
-
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
-    public void handleUserRequest(Long productId, int quantity) {
-        try {
-            orderService.placeOrder(productId, quantity);
-            System.out.println("Sipariş başarıyla oluşturuldu. " +
-                "Ürün ID: " + productId + ", Adet: " + quantity);
-        } catch (Exception e) {
-            System.out.println("Sipariş oluşturulamadı: " + e.getMessage());
-        }
-    }
-}
-```
 
 **Katman Kuralı Kontrolü:** `OrderController` yalnızca `OrderService`'i tanımaktadır. `ProductRepository` veya `Product` sınıflarını doğrudan import etmemektedir. ✅
 
@@ -225,46 +143,6 @@ public class OrderController {
   3. `OrderController` oluşturuldu → `OrderService` inject edildi.
 - Test verileri eklenerek sistem çalıştırıldı.
 
-**Kod Özeti:**
-
-```java
-package tr.edu.mu.se3006;
-
-import tr.edu.mu.se3006.model.Product;
-import tr.edu.mu.se3006.persistence.ProductRepository;
-import tr.edu.mu.se3006.business.OrderService;
-import tr.edu.mu.se3006.presentation.OrderController;
-
-public class Main {
-    public static void main(String[] args) {
-
-        // --- Bootstrapping: Aşağıdan Yukarıya Nesne Oluşturma ---
-
-        // 1. Persistence Layer
-        ProductRepository productRepository = new ProductRepository();
-
-        // Test verisi ekle
-        Product laptop = new Product(1L, "Laptop", 10);
-        productRepository.save(laptop);
-
-        // 2. Business Layer
-        OrderService orderService = new OrderService(productRepository);
-
-        // 3. Presentation Layer
-        OrderController orderController = new OrderController(orderService);
-
-        // --- Sistem Testi ---
-        System.out.println("=== Test 1: Geçerli sipariş ===");
-        orderController.handleUserRequest(1L, 3);
-
-        System.out.println("\n=== Test 2: Yetersiz stok ===");
-        orderController.handleUserRequest(1L, 100);
-
-        System.out.println("\n=== Test 3: Var olmayan ürün ===");
-        orderController.handleUserRequest(99L, 1);
-    }
-}
-```
 
 ---
 
